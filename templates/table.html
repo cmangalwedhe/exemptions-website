@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Exemptions</title>
+    <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+</head>
+
+<body>
+    <br>
+    <h1 style="text-align: center">View Your Exemptions Below!</h1>
+
+    <div class="container" style="display: flex; justify-content: center">
+        <table class="horizontal-center striped">
+            <thead>
+            <tr>
+                <th scope="col">Course</th>
+                <th scope="col">Teacher</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for course in courses %}
+            <tr>
+                <th scope="row">{{ course }}</th>
+                <td>DJ BIG CARG</td>
+            </tr>
+            {% endfor %}
+
+            </tbody>
+            <tfoot>
+            <tr>
+                <th scope="row">Current Count of Classes Exempted: </th>
+                <td>{{ model.exemptions_used }}</td>
+            </tr>
+            
+            <tr>
+                <th scope="row">Total Exemptions Allowed: </th>
+                <td>{{ model.available_exemptions }}</td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</body>
+</html>

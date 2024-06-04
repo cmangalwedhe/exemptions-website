@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+    <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+</head>
+<body>
+    <br>
+    <h1 style="text-align: center">Welcome to the Cypress Ranch High School Exemptions Page!</h1>
+
+    <form style="width: 75%; margin-left: auto; margin-right: auto">
+        {% csrf_token %}
+        <fieldset role="group">
+            <input name="id" type="text" placeholder="Enter your student id (only digits - no 's' or 'S')" />
+            <input formmethod="POST" type="submit" value="View Exemptions" />
+        </fieldset>
+    </form>
+</body>
+</html>

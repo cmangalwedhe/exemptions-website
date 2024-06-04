@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Login</title>
+    <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+</head>
+<body>
+<br>
+<h1 style="text-align: center">Teacher Login</h1>
+<form method="POST" style="width: 75%; margin-left: auto; margin-right: auto">
+    {% csrf_token %}
+    <fieldset>
+        <label>
+            username (format: firstname.lastname - all lowercase)
+            <input
+                    name="username"
+                    placeholder="username"
+                    autocomplete="username"
+                    required
+            />
+        </label>
+        <label>
+            password
+            <input
+                    type="password"
+                    name="password"
+                    placeholder="password"
+                    autocomplete="password"
+                    required
+            />
+        </label>
+    </fieldset>
+
+    <input
+            type="submit"
+            value="Login"
+    />
+
+    {% if messages %}
+    <dialog open>
+        <article>
+            <header>
+                <button aria-label="Close" data-dismiss="modal" rel="prev"></button>
+                <p>q
+                    <strong>Important Message</strong>
+                </p>
+            </header>
+                {% for message in messages %}
+                    <p>
+                        {{ message }}
+                    </p>
+                {% endfor %}
+        </article>
+    </dialog>
+    {% endif %}
+</form>
+</body>
+</html>
