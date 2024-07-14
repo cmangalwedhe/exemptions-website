@@ -1,9 +1,8 @@
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from exemptions.models import Exemption
 from django.http import HttpResponse
-from exemptions.models import StringsList
+from django.shortcuts import render, redirect
+from exemptions.models import Exemption, Teacher
+from exemptions.models import StringsList, CourseList
 from django.contrib import messages
 
 
@@ -12,9 +11,7 @@ def home(request):
     if request.method == "POST":
         student_id = int(request.POST["id"])
         student_model = Exemption.objects.get_or_create(identifier=student_id)[0]
-        string = StringsList.objects.create(value="Computer Science III K")
-        student_model.exempted_strings.add(string)
-        return render(request, "table.html", {"courses": [course.value for course in student_model.exempted_strings.all()], "model": student_model})
+        return render(request, "table.html", {"courses": [course for course in student_model.exempted_strings.all()], "model": student_model})
 
     return render(request,  "base.html")
 
@@ -28,7 +25,7 @@ def teacher(request):
 
         if user is not None:
             login(request, user)
-            return teacher_list(request)
+            return redirect("teacher_list")
         else:
             messages.error(request, "Invalid username or password")
 
@@ -36,5 +33,31 @@ def teacher(request):
 
 
 def teacher_list(request):
-    return HttpResponse(f"Hi, {request.user.username}")
+    teacher_model = Teacher.objects.get_or_create(identifier=request.user.username)[0]
+    curr_courses = sorted(teacher_model.classes.all(), key=lambda c: c.period)
 
+    if request.method == "GET":
+        return render(request, "teacher_home.html", {"username": request.user.username,
+                                                     "courses": None if curr_courses is None else curr_courses})
+
+    if request.POST.get("courseName"):
+        course = CourseList.objects.create(name=request.POST["courseName"], period=int(request.POST.get("select")))
+        teacher_model.classes.add(course)
+        return redirect("teacher_list")
+
+    if request.POST.get("studentID"):
+        student_model = Exemption.objects.get_or_create(identifier=int(request.POST["studentID"]))[0]
+        course_string = request.POST["exempt-class"]
+        course = CourseList.objects.get_or_create(name=course_string[:course_string.find("-")], period=int(course_string[-1]))
+        student_model.exempted_strings.add(course[0])
+        student_model.exemptions_used.__add__(1)
+
+        teacher_model.exempted_ids.add(request.POST["studentID"])
+
+        return redirect("teacher_list")
+
+    for course in curr_courses:
+        if request.POST.get(course.name) == "on":
+            teacher_model.classes.remove(course)
+
+    return redirect("teacher_list")

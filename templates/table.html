@@ -18,15 +18,15 @@
             <thead>
             <tr>
                 <th scope="col">Course</th>
-                <th scope="col">Teacher</th>
+                <th scope="col">Period</th>
             </tr>
             </thead>
             <tbody>
 
             {% for course in courses %}
             <tr>
-                <th scope="row">{{ course }}</th>
-                <td>DJ BIG CARG</td>
+                <th scope="row">{{ course.name }}</th>
+                <td>{{ course.period }}</td>
             </tr>
             {% endfor %}
 

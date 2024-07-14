@@ -39,24 +39,6 @@
             type="submit"
             value="Login"
     />
-
-    {% if messages %}
-    <dialog open>
-        <article>
-            <header>
-                <button aria-label="Close" data-dismiss="modal" rel="prev"></button>
-                <p>q
-                    <strong>Important Message</strong>
-                </p>
-            </header>
-                {% for message in messages %}
-                    <p>
-                        {{ message }}
-                    </p>
-                {% endfor %}
-        </article>
-    </dialog>
-    {% endif %}
 </form>
 </body>
 </html>

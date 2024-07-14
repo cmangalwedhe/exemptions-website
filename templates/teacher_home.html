@@ -1,0 +1,256 @@
+<!DOCTYPE HTML>
+
+<html lang="en">
+    <head>
+        <title>Teacher Homepage</title>
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+        />
+    </head>
+
+    <body>
+        <article style="text-align:center;">
+            Hi {{ username }}, welcome to the teacher portal! If this is your first time logging in, please update your
+            profile to include what courses you are teaching for this semester. For changes to populate, please refresh 
+            your window.
+        </article>
+
+        <h2 style="text-align: center">Current Courses Added:</h2>
+
+        <div class="container">
+            <table>
+              <thead data-theme="light">
+                <tr>
+                    <td scope="col">Course Name</td>
+                    <td scope="col">Period</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if courses %}
+                    {% for course in courses %}
+                        <tr>
+                            <td>{{ course.name }}</td>
+                            <td>{{ course.period }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td>No courses added yet.</td>
+                        <td>0</td>
+                    </tr>
+                {% endif %}
+              </tbody>
+              <tfoot></tfoot>
+            </table>
+        </div>
+
+        <div class="container">
+            <section class="grid" id="modal">
+                <button class="outline contrast" data-target="add-courses-modal" onclick="toggleModal(event)">
+                    Add course
+                </button>
+            </section>
+
+            <section class="grid" id="modal">
+                <button class="outline contrast" data-target="delete-courses-modal" onclick="toggleModal(event)">
+                    Delete course
+                </button>
+            </section>
+
+            <section class="grid" id="modal">
+                <button class="outline contrast" data-target="exempt-student-modal" onclick="toggleModal(event)">
+                    Exempt Student
+                </button>
+            </section>
+        </div>
+
+        <div class="container">
+            <dialog id="add-courses-modal">
+                <article>
+                    <header>
+                        <button aria-label="Close" rel="prev" data-target="add-courses-modal" onclick="toggleModal(event)"></button>
+                        <h3>Add New Course</h3>
+                    </header>
+
+                    <form method="POST" style="width: 75%; margin-left: auto; margin-right: auto">
+                        {% csrf_token %}
+
+                        <fieldset>
+                            <label>
+                                Course Name
+
+                                <input
+                                    name="courseName"
+                                    placeholder="e.g. Mangalwedhe 101"
+                                    autocomplete="courseName"
+                                    required
+                                />
+                            </label>
+
+                            <select name="select" aria-label="Select" required>
+                                <option selected disabled value="">Select</option>
+                                    <option>1</option>
+                                    <option>2</option>
+                                    <option>3</option>
+                                    <option>4</option>
+                                    <option>5</option>
+                                    <option>6</option>
+                                    <option>7</option>
+                            </select>
+                        </fieldset>
+                    <input type="submit" value="Add class" />
+                    </form>
+                </article>
+            </dialog>
+        </div>
+
+        <div class="container">
+            <dialog id="delete-courses-modal">
+                <article>
+                    <header>
+                        <button aria-label="Close" rel="prev" data-target="delete-courses-modal" onclick="toggleModal(event)"></button>
+                        <h3>Delete Course(s)</h3>
+                    </header>
+
+                    <form method="POST" style="width: 75%; margin-left: auto; margin-right: auto">
+                        {% csrf_token %}
+
+                        <fieldset>
+                            <legend>Select Courses to Remove:</legend>
+
+                            {% if courses %}
+                                {% for course in courses %}
+                                    <label>
+                                        <input type="checkbox" name="{{ course.name }}" />
+                                        {{ course.name }}
+                                    </label>
+                                {% endfor %}
+                            {% else %}
+                                <p>No courses available to delete.</p>
+                            {% endif %}
+                        </fieldset>
+                    <input type="submit" value="Delete Class(es)" />
+                    </form>
+                </article>
+            </dialog>
+        </div>
+
+        <div class="container">
+            <dialog id="exempt-student-modal">
+                <article>
+                    <header>
+                        <button aria-label="Close" rel="prev" data-target="exempt-student-modal" onclick="toggleModal(event)"></button>
+                        <h3>Exempt Student</h3>
+                    </header>
+
+                    <form method="POST" style="width: 75%; margin-left: auto; margin-right: auto">
+                        {% csrf_token %}
+
+                        <fieldset>
+                            <label>
+                                Student ID
+
+                                <input
+                                    name="studentID"
+                                    placeholder="six digit student id"
+                                    autocomplete="studentID"
+                                    required
+                                />
+                            </label>
+
+                            <select name="exempt-class" aria-label="Select" required>
+                                {% if courses %}
+                                    {% for course in courses %}
+                                        <option>{{ course.name }} - Period {{ course.period }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                      <option selected disabled value="">No classes added to exempt student</option>
+                                {% endif %}
+                            </select>
+                        </fieldset>
+                    <input type="submit" value="Exempt Student" />
+                    </form>
+                </article>
+            </dialog>
+        </div>
+
+    <script>
+        /*
+         * Modal
+         *
+         * Pico.css - https://picocss.com
+         * Copyright 2019-2024 - Licensed under MIT
+         */
+
+        // Config
+        const isOpenClass = "modal-is-open";
+        const openingClass = "modal-is-opening";
+        const closingClass = "modal-is-closing";
+        const scrollbarWidthCssVar = "--pico-scrollbar-width";
+        const animationDuration = 400; // ms
+        let visibleModal = null;
+
+        // Toggle modal
+        const toggleModal = (event) => {
+            event.preventDefault();
+            const modal = document.getElementById(event.currentTarget.dataset.target);
+            if (!modal) return;
+            modal && (modal.open ? closeModal(modal) : openModal(modal));
+        };
+
+        // Open modal
+        const openModal = (modal) => {
+            const {documentElement: html} = document;
+            const scrollbarWidth = getScrollbarWidth();
+            if (scrollbarWidth) {
+                html.style.setProperty(scrollbarWidthCssVar, `${scrollbarWidth}px`);
+            }
+            html.classList.add(isOpenClass, openingClass);
+            setTimeout(() => {
+                visibleModal = modal;
+                html.classList.remove(openingClass);
+            }, animationDuration);
+            modal.showModal();
+        };
+
+        // Close modal
+        const closeModal = (modal) => {
+            visibleModal = null;
+            const {documentElement: html} = document;
+            html.classList.add(closingClass);
+            setTimeout(() => {
+                html.classList.remove(closingClass, isOpenClass);
+                html.style.removeProperty(scrollbarWidthCssVar);
+                modal.close();
+            }, animationDuration);
+        };
+
+        // Close with a click outside
+        document.addEventListener("click", (event) => {
+            if (visibleModal === null) return;
+            const modalContent = visibleModal.querySelector("article");
+            const isClickInside = modalContent.contains(event.target);
+            !isClickInside && closeModal(visibleModal);
+        });
+
+        // Close with Esc key
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && visibleModal) {
+                closeModal(visibleModal);
+            }
+        });
+
+        // Get scrollbar width
+        const getScrollbarWidth = () => {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            return scrollbarWidth;
+        };
+
+        // Is scrollbar visible
+        const isScrollbarVisible = () => {
+            return document.body.scrollHeight > screen.height;
+        };
+    </script>
+    </body>
+</html>
