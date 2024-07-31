@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Portal</title>
+    
+    <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+</head>
+<body>
+    <h1 style="text-align: center">Admin Portal</h1>
+
+    {% for message in messages %}
+        <div id="alerts" class="container">
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <p style="text-align: center"><kbd style="white-space: pre-wrap; word-wrap: break-word; line-height: 1.5; background-color: darkseagreen">{{ message|safe }}</kbd></p>
+            {% elif  message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <p style="text-align: center"><kbd style="white-space: pre-wrap; word-wrap: break-word; line-height: 1.5; background-color: darkseagreen">{{ message|safe }}</kbd></p>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <div class="container">
+        <section class="grid" id="modal">
+            <button class="outline contrast" data-target="upload-modal" onclick="toggleModal(event)">
+                Upload Student Data
+            </button>
+        </section>
+
+        <section class="grid" id="modal">
+            <button class="outline contrast" data-target="check-student-modal" onclick="toggleModal(event)">
+                Check Student Exemption Status
+            </button>
+        </section>
+
+        <section class="grid" id="modal">
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" name="logout" value="true" class="outline contrast">
+                    Logout
+                </button>
+            </form>
+        </section>
+    </div>
+
+    <div class="container">
+            <dialog id="upload-modal">
+                <article>
+                    <header>
+                        <button aria-label="Close" rel="prev" data-target="upload-modal" onclick="toggleModal(event)"></button>
+                        <h3>Upload Student Data</h3>
+                        <p>Please upload the student data as a CSV file (student id, grade level)</p>
+                    </header>
+
+                    <form method="POST" enctype="multipart/form-data" style="width: 75%; margin-left: auto; margin-right: auto">
+                        {% csrf_token %}
+
+                        <fieldset>
+                            {{ form.file }}
+                            <label>
+                                <input type="checkbox" name="spring_semester" />
+                                Check this box if this is the spring semester
+                            </label>
+                        </fieldset>
+                    <input type="submit" value="Upload Student Data" />
+                    </form>
+                </article>
+            </dialog>
+
+            <dialog id="check-student-modal">
+                    <article>
+                        <header>
+                            <button aria-label="Close" rel="prev" data-target="check-student-modal" onclick="toggleModal(event)"></button>
+                            <h3>Enter Student ID:</h3>
+                        </header>
+
+                        <form method="POST" enctype="multipart/form-data" style="width: 75%; margin-left: auto; margin-right: auto">
+                            {% csrf_token %}
+
+                            <fieldset>
+                                <label>
+                                    Student ID
+
+                                    <input
+                                        name="studentID"
+                                        placeholder="six digit student id"
+                                        autocomplete="studentID"
+                                        required
+                                    />
+                                </label>
+                            </fieldset>
+                        <input type="submit" value="Upload Student Data" />
+                        </form>
+                    </article>
+                </dialog>
+        </div>
+
+    <script>
+        /*
+         * Modal
+         *
+         * Pico.css - https://picocss.com
+         * Copyright 2019-2024 - Licensed under MIT
+         */
+
+        // Config
+        const isOpenClass = "modal-is-open";
+        const openingClass = "modal-is-opening";
+        const closingClass = "modal-is-closing";
+        const scrollbarWidthCssVar = "--pico-scrollbar-width";
+        const animationDuration = 400; // ms
+        let visibleModal = null;
+
+        // Toggle modal
+        const toggleModal = (event) => {
+            event.preventDefault();
+            const modal = document.getElementById(event.currentTarget.dataset.target);
+            if (!modal) return;
+            modal && (modal.open ? closeModal(modal) : openModal(modal));
+        };
+
+        // Open modal
+        const openModal = (modal) => {
+            const {documentElement: html} = document;
+            const scrollbarWidth = getScrollbarWidth();
+            if (scrollbarWidth) {
+                html.style.setProperty(scrollbarWidthCssVar, `${scrollbarWidth}px`);
+            }
+            html.classList.add(isOpenClass, openingClass);
+            setTimeout(() => {
+                visibleModal = modal;
+                html.classList.remove(openingClass);
+            }, animationDuration);
+            modal.showModal();
+        };
+
+        // Close modal
+        const closeModal = (modal) => {
+            visibleModal = null;
+            const {documentElement: html} = document;
+            html.classList.add(closingClass);
+            setTimeout(() => {
+                html.classList.remove(closingClass, isOpenClass);
+                html.style.removeProperty(scrollbarWidthCssVar);
+                modal.close();
+            }, animationDuration);
+        };
+
+        // Close with a click outside
+        document.addEventListener("click", (event) => {
+            if (visibleModal === null) return;
+            const modalContent = visibleModal.querySelector("article");
+            const isClickInside = modalContent.contains(event.target);
+            !isClickInside && closeModal(visibleModal);
+        });
+
+        // Close with Esc key
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && visibleModal) {
+                closeModal(visibleModal);
+            }
+        });
+
+        // Get scrollbar width
+        const getScrollbarWidth = () => {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            return scrollbarWidth;
+        };
+
+        // Is scrollbar visible
+        const isScrollbarVisible = () => {
+            return document.body.scrollHeight > screen.height;
+        };
+    </script>
+</body>
+</html>

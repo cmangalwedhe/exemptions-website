@@ -10,12 +10,54 @@
     </head>
 
     <body>
+        {% if unexempt %}
+            <div class="container">
+                <dialog open>
+                    <article>
+                        <header>
+                            <h3>Unexempt Student {{ student_id }} from the following courses:</h3>
+                        </header>
+
+                        <form method="POST" style="width: 75%; margin-left: auto; margin-right: auto">
+                            {% csrf_token %}
+
+                            <fieldset>
+                                <legend>Select Courses to Unexempt Student:</legend>
+                                <input type="submit" value="Go Back" name="undo" />
+                                <input type="hidden" name="studentID3" value="{{ student_id }}"/>
+
+                                {% if unexempt_courses %}
+                                    {% for course in unexempt_courses %}
+                                        <label>
+                                            <input type="checkbox" id={{ student_id }} name="{{ course }}" />
+                                            {{ course }}
+                                        </label>
+                                    {% endfor %}
+                                {% endif %}
+                            </fieldset>
+                        <input type="submit" value="Unexempt Student" />
+                        </form>
+                    </article>
+                </dialog>
+            </div>
+        {% endif %}
+
         <article style="text-align:center;">
             Hi {{ username }}, welcome to the teacher portal! If this is your first time logging in, please update your
-            profile to include what courses you are teaching for this semester. For changes to populate, please refresh 
-            your window.
+            profile to include what courses you are teaching for this semester. For changes to populate or to dismiss
+            alerts, please refresh your window.
         </article>
 
+        {% for message in messages %}
+            <div id="alerts" class="container">
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                    <p style="text-align: center"><kbd style="background-color: #974242;">{{ message|safe }}</kbd></p>
+                {% elif  message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                    <p style="text-align: center"><kbd style="background-color: darkseagreen">{{ message|safe }}</kbd></p>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
         <h2 style="text-align: center">Current Courses Added:</h2>
 
         <div class="container">
@@ -62,6 +104,27 @@
                 <button class="outline contrast" data-target="exempt-student-modal" onclick="toggleModal(event)">
                     Exempt Student
                 </button>
+            </section>
+
+            <section class="grid" id="modal">
+                <button class="outline contrast" data-target="unexempt-student-modal" onclick="toggleModal(event)">
+                    Unexempt Student
+                </button>
+            </section>
+            
+            <section class="grid" id="modal">
+                <button class="outline contrast" data-target="check-student-modal" onclick="toggleModal(event)">
+                    Did I Exempt a Student Already?
+                </button>
+            </section>
+
+            <section class="grid" id="modal">
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" name="logout" value="true" class="outline contrast">
+                        Logout
+                    </button>
+                </form>
             </section>
         </div>
 
@@ -111,6 +174,7 @@
                     <header>
                         <button aria-label="Close" rel="prev" data-target="delete-courses-modal" onclick="toggleModal(event)"></button>
                         <h3>Delete Course(s)</h3>
+                        <h6><strong>Please note that any students already exempted for this course will still be shown as exempted on their portal.</strong></h6>
                     </header>
 
                     <form method="POST" style="width: 75%; margin-left: auto; margin-right: auto">
@@ -118,12 +182,12 @@
 
                         <fieldset>
                             <legend>Select Courses to Remove:</legend>
-
+                            <input type="hidden" id="delete-classes" value="true" />
                             {% if courses %}
                                 {% for course in courses %}
                                     <label>
-                                        <input type="checkbox" name="{{ course.name }}" />
-                                        {{ course.name }}
+                                        <input type="checkbox" name="{{ course.name }} - {{ course.period }}" />
+                                        {{ course.name }} - Period {{ course.period }}
                                     </label>
                                 {% endfor %}
                             {% else %}
@@ -175,6 +239,64 @@
             </dialog>
         </div>
 
+        <div class="container">
+            <dialog id="unexempt-student-modal">
+                <article>
+                    <header>
+                        <button aria-label="Close" rel="prev" data-target="unexempt-student-modal" onclick="toggleModal(event)"></button>
+                        <h3>Unexempt Student</h3>
+                    </header>
+
+                    <form method="POST" style="width: 75%; margin-left: auto; margin-right: auto">
+                        {% csrf_token %}
+
+                        <fieldset>
+                            <label>
+                                Student ID
+
+                                <input
+                                    name="studentID2"
+                                    placeholder="six digit student id"
+                                    autocomplete="studentID"
+                                    required
+                                />
+                            </label>
+                        </fieldset>
+                    <input type="submit" value="Unexempt Student" />
+                    </form>
+                </article>
+            </dialog>
+        </div>
+
+        
+        <div class="container">
+            <dialog id="check-student-modal">
+                <article>
+                    <header>
+                        <button aria-label="Close" rel="prev" data-target="check-student-modal" onclick="toggleModal(event)"></button>
+                        <h3>Did I Exempt a Student?</h3>
+                    </header>
+
+                    <form method="POST" style="width: 75%; margin-left: auto; margin-right: auto">
+                        {% csrf_token %}
+
+                        <fieldset>
+                            <label>
+                                Student ID
+
+                                <input
+                                    name="studentID4"
+                                    placeholder="six digit student id"
+                                    autocomplete="studentID"
+                                    required
+                                />
+                            </label>
+                        </fieldset>
+                    <input type="submit" value="Check Exemption Status" />
+                    </form>
+                </article>
+            </dialog>
+        </div>
     <script>
         /*
          * Modal

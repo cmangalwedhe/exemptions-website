@@ -10,11 +10,15 @@
 </head>
 <body>
 <br>
-<h1 style="text-align: center">Teacher Login</h1>
+<h1 style="text-align: center">Admin Login</h1>
 
 {% for message in messages %}
     <div id="alerts" class="container">
-        <p style="text-align: center"><kbd>{{ message }}</kbd></p>
+        {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+            <p style="text-align: center"><kbd style="background-color: #974242;">{{ message }}</kbd></p>
+        {% elif  message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+            <p style="text-align: center"><kbd style="background-color: darkseagreen">{{ message }}</kbd></p>
+        {% endif %}
     </div>
 {% endfor %}
 
