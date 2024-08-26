@@ -12,7 +12,7 @@ class CourseList(models.Model):
 
 # Create your models here.
 class Exemption(models.Model):
-    identifier = models.IntegerField(unique=False)
+    identifier = models.CharField(max_length=6, unique=False)
     exempted_strings = models.ManyToManyField(CourseList, blank=True, related_name='exempted_models')
     available_exemptions = models.IntegerField(unique=False, default=0)
     exemptions_used = models.IntegerField(unique=False, default=0)

@@ -12,6 +12,17 @@
     <br>
     <h1 style="text-align: center">Welcome to the Cypress Ranch High School Exemptions Page!</h1>
 
+    
+    {% for message in messages %}
+        <div id="alerts" class="container">
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <p style="text-align: center"><kbd style="background-color: #974242;">{{ message|safe }}</kbd></p>
+            {% elif  message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <p style="text-align: center"><kbd style="background-color: darkseagreen">{{ message|safe }}</kbd></p>
+            {% endif %}
+        </div>
+    {% endfor %}
+    
     <form style="width: 75%; margin-left: auto; margin-right: auto">
         {% csrf_token %}
         <fieldset role="group">

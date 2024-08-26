@@ -1,6 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 import csv
@@ -15,10 +14,15 @@ from django.db.models import F
 # Create your views here.
 def home(request):
     if request.method == "POST":
-        student_id = int(request.POST["id"])
-        student_model = Exemption.objects.get_or_create(identifier=student_id)[0]
-        return render(request, "table.html",
+        student_id = request.POST["id"]
+
+        try:
+            student_model = Exemption.objects.get(identifier=student_id)
+            return render(request, "table.html",
                       {"courses": [course for course in student_model.exempted_strings.all()], "model": student_model})
+        except Exemption.DoesNotExist:
+            messages.error(request, "Student does not exist, please contact the AP office to add this student ID.")
+            return redirect("exemptions")
 
     return render(request, "base.html")
 
@@ -66,7 +70,7 @@ def teacher_list(request):
 
     if request.POST.get("studentID"):
         try:
-            student_model = Exemption.objects.get(identifier=int(request.POST["studentID"]))[0]
+            student_model = Exemption.objects.get(identifier=request.POST["studentID"])[0]
         except Exemption.DoesNotExist:
             messages.error(request, "Student ID not registered with school database, please contact APs")
             return redirect("teacher_list")
@@ -109,7 +113,7 @@ def teacher_list(request):
                 StringsList.objects.get_or_create(value=request.POST["studentID2"])[0]):
             messages.error(request, f"{request.POST['studentID2']} is not exempted for any of your classes")
         else:
-            student_model = Exemption.objects.get_or_create(identifier=int(request.POST["studentID2"]))[0]
+            student_model = Exemption.objects.get_or_create(identifier=request.POST["studentID2"])[0]
             courses_to_pick = [s.name.strip() for s in student_model.exempted_strings.all()]
             teacher_courses = [course.name for course in teacher_model.classes.all()]
             filtered = [c for c in courses_to_pick if teacher_courses.__contains__(c)]
@@ -121,7 +125,7 @@ def teacher_list(request):
         return redirect("teacher_list")
 
     if request.POST.get("studentID3"):
-        student_model = Exemption.objects.get_or_create(identifier=int(request.POST["studentID3"]))[0]
+        student_model = Exemption.objects.get_or_create(identifier=request.POST["studentID3"])[0]
         count = 0
         student_id = None
 
@@ -145,7 +149,7 @@ def teacher_list(request):
         return redirect("teacher_list")
 
     if request.POST.get("studentID4"):
-        student_model = Exemption.objects.get_or_create(identifier=int(request.POST["studentID4"]))[0]
+        student_model = Exemption.objects.get_or_create(identifier=request.POST["studentID4"])[0]
         courses_to_pick = [f"{s.name} - Period {s.period}" for s in student_model.exempted_strings.all()]
         teacher_courses = [f"{course.name} - Period {course.period}" for course in teacher_model.classes.all()]
         filtered = [c for c in courses_to_pick if teacher_courses.__contains__(c)]
@@ -199,7 +203,7 @@ def administration(request):
     if request.method == "POST":
         if request.POST.get("studentID"):
             try:
-                student_model = Exemption.objects.get(identifier=int(request.POST["studentID"]))
+                student_model = Exemption.objects.get(identifier=request.POST["studentID"])
             except Exemption.DoesNotExist:
                 student_model = None
 
@@ -238,7 +242,7 @@ def administration(request):
 
                     for row in reader:
                         student, created = Exemption.objects.get_or_create(
-                            identifier=int(row['student id']),
+                            identifier=row['student id'],
                             defaults={
                                 'available_exemptions': exemptions[row['grade level']],
                                 'exemptions_used': 0
